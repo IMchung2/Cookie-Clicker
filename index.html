@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🍪 Cookie Clicker Chaos</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #fff6e6;
+      text-align: center;
+      padding: 20px;
+    }
+    #cookie {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: url('https://orteil.dashnet.org/cookieclicker/img/perfectCookie.png');
+      background-size: cover;
+      margin: 20px auto;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    #cookie:active {
+      transform: scale(0.95);
+    }
+    button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 18px;
+    }
+    .shop, .troll, .prestige {
+      margin-top: 20px;
+    }
+    .golden {
+      width: 50px;
+      height: 50px;
+      background: gold;
+      border-radius: 50%;
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      cursor: pointer;
+      box-shadow: 0 0 15px gold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🍪 Cookie Clicker Clone: CHAOS MODE</h1>
+<h2>Cookies: <span id="cookieCount">0</span></h2>
+<h3>CPS: <span id="cps">0</span> | Prestige: <span id="prestige">0</span>x</h3>
+
+<div id="cookie"></div>
+<div id="golden" class="golden"></div>
+
+<div class="shop">
+  <h2>Upgrades</h2>
+  <button onclick="buy(0)">🤖 Cursor (10) | Owned: <span id="u0">0</span></button><br>
+  <button onclick="buy(1)">👵 Grandma (100) | Owned: <span id="u1">0</span></button><br>
+  <button onclick="buy(2)">🧠 AI Core (1000) | Owned: <span id="u2">0</span></button>
+</div>
+
+<div class="troll">
+  <h2>Troll Upgrades</h2>
+  <button onclick="trollBuy()">😈 Mystery Box (666)</button>
+</div>
+
+<div class="prestige">
+  <h2>Prestige</h2>
+  <button onclick="prestigeReset()">🌌 Ascend (1,000,000 cookies)</button>
+</div>
+
+<audio id="clickSound" src="https://www.soundjay.com/button/sounds/button-09.mp3"></audio>
+<audio id="goldenSound" src="https://www.soundjay.com/button/sounds/button-3.mp3"></audio>
+
+<script>
+let cookies = 0;
+let cps = 0;
+let prestige = 0;
+let upgrades = [
+  { name: "Cursor", cost: 10, cps: 0.1, count: 0, id: "u0" },
+  { name: "Grandma", cost: 100, cps: 1, count: 0, id: "u1" },
+  { name: "AI Core", cost: 1000, cps: 10, count: 0, id: "u2" },
+];
+
+const clickSound = document.getElementById("clickSound");
+const goldenSound = document.getElementById("goldenSound");
+
+function update() {
+  document.getElementById("cookieCount").textContent = Math.floor(cookies);
+  document.getElementById("cps").textContent = cps.toFixed(1);
+  document.getElementById("prestige").textContent = prestige;
+  upgrades.forEach((u, i) => {
+    document.getElementById(u.id).textContent = u.count;
+  });
+}
+
+function buy(i) {
+  let upg = upgrades[i];
+  if (cookies >= upg.cost) {
+    cookies -= upg.cost;
+    upg.count++;
+    cps += upg.cps * (1 + prestige * 0.1);
+    upg.cost = Math.floor(upg.cost * 1.2);
+    update();
+  }
+}
+
+function trollBuy() {
+  if (cookies >= 666) {
+    cookies -= 666;
+    let prank = Math.random();
+    if (prank < 0.5) {
+      alert("😈 It's a scam! You lost all your cookies!");
+      cookies = 0;
+    } else {
+      alert("🎉 Surprise! You gained 9999 cookies!");
+      cookies += 9999;
+    }
+    update();
+  }
+}
+
+function prestigeReset() {
+  if (cookies >= 1000000) {
+    prestige++;
+    cookies = 0;
+    cps = 0;
+    upgrades.forEach(u => { u.count = 0; u.cost = u.cost / Math.pow(1.2, u.count); });
+    alert("🌌 You ascended. Prestige +1!");
+    update();
+  }
+}
+
+document.getElementById("cookie").addEventListener("click", () => {
+  cookies += 1 + prestige;
+  clickSound.play();
+  update();
+});
+
+// CPS Loop
+setInterval(() => {
+  cookies += cps;
+  update();
+}, 1000);
+
+// Golden cookie
+function spawnGolden() {
+  const el = document.getElementById("golden");
+  el.style.display = "block";
+  el.style.top = Math.random() * 300 + 100 + "px";
+  el.style.left = Math.random() * 80 + 10 + "%";
+  setTimeout(() => el.style.display = "none", 7000);
+}
+
+document.getElementById("golden").addEventListener("click", () => {
+  goldenSound.play();
+  cookies += 777 * (1 + prestige);
+  document.getElementById("golden").style.display = "none";
+  update();
+});
+
+setInterval(() => {
+  if (Math.random() < 0.01) spawnGolden();
+}, 1000);
+
+// Auto-save
+setInterval(() => {
+  localStorage.setItem("cookies", cookies);
+  localStorage.setItem("cps", cps);
+  localStorage.setItem("prestige", prestige);
+  localStorage.setItem("upgrades", JSON.stringify(upgrades));
+}, 5000);
+
+// Load game
+window.onload = () => {
+  if (localStorage.getItem("cookies")) {
+    cookies = parseFloat(localStorage.getItem("cookies"));
+    cps = parseFloat(localStorage.getItem("cps"));
+    prestige = parseInt(localStorage.getItem("prestige"));
+    upgrades = JSON.parse(localStorage.getItem("upgrades"));
+  }
+  update();
+};
+</script>
+
+</body>
+</html>
